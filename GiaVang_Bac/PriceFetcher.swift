@@ -8,48 +8,32 @@ import Foundation
 import SwiftSoup // Đảm bảo bạn đã import thư viện
 
 class GoldService {
-    func fetchLatestGoldRate(completion: @escaping ([EximbankGoldRate]) -> Void) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd"
-        let dateStr = formatter.string(from: Date())
-
-        var latestRates: [EximbankGoldRate] = []
-        var currentCNT = 1
-
-        func fetchNextQuoteCNT() {
-            let urlStr = "https://eximbank.com.vn/api/front/v1/gold-rate?strNoticeday=\(dateStr)&strBRCD=1000&strQuoteCNT=\(currentCNT)"
-            guard let url = URL(string: urlStr) else { return }
-
-            URLSession.shared.dataTask(with: url) { data, _, error in
-                guard let data = data else {
-                    DispatchQueue.main.async {
-                        completion(latestRates) // Nếu lỗi => trả về cái trước đó
-                    }
-                    return
-                }
-
-                do {
-                    let decoded = try JSONDecoder().decode([EximbankGoldRate].self, from: data)
-                    if decoded.isEmpty {
-                        // Không còn bảng mới => trả về bảng cuối có dữ liệu
-                        DispatchQueue.main.async {
-                            completion(latestRates)
-                        }
-                    } else {
-                        latestRates = decoded
-                        currentCNT += 1
-                        fetchNextQuoteCNT() // Thử bảng kế tiếp
-                    }
-                } catch {
-                    // Nếu lỗi decode => dùng dữ liệu gần nhất
-                    DispatchQueue.main.async {
-                        completion(latestRates)
-                    }
-                }
-            }.resume()
+    func fetchLatestGoldRate(completion: @escaping ([MihongGoldRate]) -> Void) {
+        guard let url = URL(string: "https://api.mihong.vn/v1/gold-prices?market=domestic") else {
+            completion([])
+            return
         }
 
-        fetchNextQuoteCNT()
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion([])
+                }
+                return
+            }
+
+            do {
+                let decoded = try JSONDecoder().decode([MihongGoldRate].self, from: data)
+                DispatchQueue.main.async {
+                    completion(decoded)
+                }
+            } catch {
+                print("Decode error: \(error)")
+                DispatchQueue.main.async {
+                    completion([])
+                }
+            }
+        }.resume()
     }
 }
 

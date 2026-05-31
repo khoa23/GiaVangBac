@@ -6,11 +6,16 @@
 //
 import Foundation
 
-struct EximbankGoldRate: Decodable {
-    let Cur_NameVN: String
-    let TTBUYRT: String
-    let TTSELLRT: String
-    let QUOTETM: String
+struct MihongGoldRate: Decodable, Identifiable {
+    var id: String { code }
+    let buyingPrice: Int
+    let sellingPrice: Int
+    let code: String
+    let sellChange: Int
+    let sellChangePercent: Double
+    let buyChange: Int
+    let buyChangePercent: Double
+    let dateTime: String
 }
 
 struct SilverProduct {
