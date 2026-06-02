@@ -113,10 +113,10 @@ struct ProductCardView: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(20)
-        // Glassmorphism background
+        // Glassmorphism background (optimized for scroll performance)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.white.opacity(0.1))
         )
         // Subtle gradient border
         .overlay(
@@ -132,6 +132,7 @@ struct ProductCardView: View {
         )
         // Shadow for elevation
         .shadow(color: Color.black.opacity(0.3), radius: 15, x: 0, y: 10)
+        .drawingGroup()
         .padding(.horizontal)
     }
 }
@@ -140,9 +141,16 @@ struct ChangeView: View {
     let change: Int
     let percent: Double
     
-    var isPositive: Bool { change >= 0 }
-    var color: Color { isPositive ? .green : .red }
-    var icon: String { isPositive ? "arrow.up.right" : "arrow.down.right" }
+    var isZero: Bool { change == 0 }
+    var isPositive: Bool { change > 0 }
+    var color: Color {
+        if isZero { return .yellow }
+        return isPositive ? .green : .red
+    }
+    var icon: String {
+        if isZero { return "minus" }
+        return isPositive ? "arrow.up.right" : "arrow.down.right"
+    }
     
     var body: some View {
         HStack(spacing: 4) {
